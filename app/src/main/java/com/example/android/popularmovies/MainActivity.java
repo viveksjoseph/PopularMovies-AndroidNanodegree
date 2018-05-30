@@ -1,9 +1,12 @@
 package com.example.android.popularmovies;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.example.android.popularmovies.Adapters.MovieDetailsAdapter;
@@ -21,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        setTitle(MovieData.getInstance().getCurrentGridArrangement().getCaption());
         makeMovieQuery();
     }
 
@@ -68,8 +71,19 @@ public class MainActivity extends AppCompatActivity {
 
                 GridView gridView = findViewById(R.id.movies_gridview);
                 gridView.setAdapter(adapter);
-
+                gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        LaunchMovieDetailActivity(position);
+                    }
+                });
             }
+        }
+
+        private void LaunchMovieDetailActivity(int position) {
+            Intent intent = new Intent(getApplicationContext(), MovieDetailActivity.class);
+            intent.putExtra(MovieDetailActivity.MOVIE_EXTRA_POSITION, position);
+            startActivity(intent);
         }
     }
 }
