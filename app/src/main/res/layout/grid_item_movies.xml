@@ -5,11 +5,8 @@
 
     <ImageView
         android:id="@+id/grid_movie_icon"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:adjustViewBounds="true"
-        android:contentDescription="Movie Icon"
-        android:scaleType="centerInside"
+        style="@style/ImageView_Layout"
+        android:contentDescription="@string/grid_movie_description"
         />
 
 </FrameLayout>
