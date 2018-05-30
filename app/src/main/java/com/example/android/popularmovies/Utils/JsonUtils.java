@@ -63,7 +63,7 @@ public class JsonUtils {
                 movieDetails.setOriginalLanguage(movieObject.getString(JSON_ORG_LANGUAGE));
             }
             if (movieObject.has(JSON_ORG_TITLE)) {
-                movieDetails.setOriginalTitle(JSON_ORG_TITLE);
+                movieDetails.setOriginalTitle(movieObject.getString(JSON_ORG_TITLE));
             }
             if (movieObject.has(JSON_GENRE_IDS)) {
                 JSONArray genreIdArray = movieObject.getJSONArray(JSON_GENRE_IDS);
@@ -71,6 +71,7 @@ public class JsonUtils {
                 for (int index = 0; index < genreIdArray.length(); index++) {
                     genreList.add(Integer.valueOf(genreIdArray.getInt(index)));
                 }
+                movieDetails.setGenreIds(genreList);
             }
             if (movieObject.has(JSON_BACKDROP_PATH)) {
                 movieDetails.setBackdropPath(IMAGE_INITIAL_PATH + movieObject.getString(JSON_BACKDROP_PATH));
