@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">Popular Movies</string>
+    <string name="detail_movie_description">Movie Details Banner</string>
+    <string name="grid_movie_description">Movie Icon</string>
     <string name="moviedb_api">Enter your API KEY here</string>
+    <string name="title_activity_movie_detail">MovieDetailActivity</string>
+    <string name="releaseDate_text">Release Date:</string>
+    <string name="Synopsis_text">Synopsis:</string>
 </resources>
