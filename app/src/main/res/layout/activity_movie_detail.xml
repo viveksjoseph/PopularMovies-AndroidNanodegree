@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.example.android.popularmovies.MovieDetailActivity">
+
+    <ImageView
+        android:id="@+id/movie_banner_iv"
+        style="@style/ImageView_Layout"
+        android:layout_height="200dp"
+        android:contentDescription="@string/detail_movie_description"/>
+
+    <TextView
+        android:id="@+id/org_title_tv"
+        style="@style/TextView_Layout_Title"
+        android:layout_alignBottom="@+id/movie_banner_iv"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true" />
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/movie_banner_iv">
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/average_rating_tv"
+                style="@style/TextView_Layout_Large"
+                app:layout_constraintBottom_toBottomOf="@+id/average_rating_rb"
+                app:layout_constraintEnd_toStartOf="@+id/average_rating_rb"
+                app:layout_constraintTop_toTopOf="@+id/average_rating_rb"
+                app:layout_constraintVertical_bias="0.29999998" />
+
+            <RatingBar
+                android:id="@+id/average_rating_rb"
+                style="?android:attr/ratingBarStyleIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="35dp"
+                android:isIndicator="true"
+                android:numStars="5"
+                android:stepSize="0.01"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/textView2"
+                style="@style/TextView_Layout_2"
+                android:layout_marginTop="20dp"
+                android:text="@string/releaseDate_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/average_rating_rb" />
+
+            <TextView
+                android:id="@+id/release_date_tv"
+                style="@style/TextView_Layout_2"
+                app:layout_constraintBottom_toBottomOf="@+id/textView2"
+                app:layout_constraintStart_toEndOf="@+id/textView2"
+                app:layout_constraintTop_toTopOf="@+id/textView2" />
+
+            <TextView
+                android:id="@+id/textView3"
+                style="@style/TextView_Layout_3"
+                android:text="@string/Synopsis_text"
+                android:textAppearance="@android:style/TextAppearance.Large"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView2" />
+
+            <TextView
+                android:id="@+id/synopsis_tv"
+                style="@style/TextView_Layout_3"
+                android:paddingRight="5dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+        </android.support.constraint.ConstraintLayout>
+    </android.support.v4.widget.NestedScrollView>
+</RelativeLayout>
