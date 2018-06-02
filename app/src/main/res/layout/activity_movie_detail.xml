@@ -71,7 +71,7 @@
             <TextView
                 android:id="@+id/textView3"
                 style="@style/TextView_Layout_3"
-                android:text="@string/Synopsis_text"
+                android:text="@string/synopsis_text"
                 android:textAppearance="@android:style/TextAppearance.Large"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView2" />
