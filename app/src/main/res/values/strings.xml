@@ -5,8 +5,9 @@
     <string name="moviedb_api">Enter your API KEY here</string>
     <string name="title_activity_movie_detail">MovieDetailActivity</string>
     <string name="releaseDate_text">Release Date:</string>
-    <string name="Synopsis_text">Synopsis:</string>
+    <string name="synopsis_text">Synopsis:</string>
     <string name="menu_title">Sort</string>
+    <string name="loading_failed_text">Could not retrieve results from the Server. Please try Later.</string>
     <string-array name="spinner_array">
         <item>Most Popular</item>
         <item>Top Rated</item>
