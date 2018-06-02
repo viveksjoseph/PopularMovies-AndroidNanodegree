@@ -8,6 +8,7 @@
     <string name="synopsis_text">Synopsis:</string>
     <string name="menu_title">Sort</string>
     <string name="loading_failed_text">Could not retrieve results from the Server. Please try Later.</string>
+    <string name="avg_vote_out_of">/10</string>
     <string-array name="spinner_array">
         <item>Most Popular</item>
         <item>Top Rated</item>

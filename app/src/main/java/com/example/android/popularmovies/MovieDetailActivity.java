@@ -60,7 +60,9 @@ public class MovieDetailActivity extends AppCompatActivity {
         movieOrgTitle.setText(movieDetail.getOriginalTitle());
 
         TextView movieAvgRating = (TextView) findViewById(R.id.average_rating_tv);
-        movieAvgRating.setText(String.valueOf(movieDetail.getVoteAverage()));
+        String voteAvgText = String.valueOf(movieDetail.getVoteAverage()) +
+                getString(R.string.avg_vote_out_of);
+        movieAvgRating.setText(voteAvgText);
 
         RatingBar movieRatingBar = (RatingBar) findViewById(R.id.average_rating_rb);
         movieRatingBar.setRating((float) movieDetail.getVoteAverage()/2);
