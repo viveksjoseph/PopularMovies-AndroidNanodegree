@@ -3,7 +3,6 @@ package com.example.android.popularmovies;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -12,7 +11,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.example.android.popularmovies.Adapters.MovieDetailsAdapter;
 import com.example.android.popularmovies.Data.MovieData;
@@ -22,20 +23,31 @@ import com.example.android.popularmovies.Utils.NetworkUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.zip.Inflater;
 
 public class MainActivity extends AppCompatActivity {
+
+    private ProgressBar mLoadingBar = null;
+    private GridView mGridView = null;
+    private TextView mLoadingFailedTv = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mLoadingBar = (ProgressBar) findViewById(R.id.loading_bar);
+        mGridView = (GridView) findViewById(R.id.movies_gridview);
+        mLoadingFailedTv = (TextView) findViewById(R.id.loading_failed_tv);
+
         setTitle(MovieData.getInstance().getCurrentGridArrangement().getCaption());
+
         makeMovieQuery();
     }
 
     private void makeMovieQuery() {
         URL movieQueryUrl = null;
+
+        showLoadingProgress();
 
         try {
             movieQueryUrl = NetworkUtils.BuildQueryURL(this,
@@ -49,6 +61,48 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void showLoadingProgress() {
+        if (mLoadingBar != null) {
+            mLoadingBar.setVisibility(View.VISIBLE);
+        }
+
+        if (mGridView != null) {
+            mGridView.setVisibility(View.INVISIBLE);
+        }
+
+        if (mLoadingFailedTv != null) {
+            mLoadingFailedTv.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void showGridContent() {
+        if (mLoadingBar != null) {
+            mLoadingBar.setVisibility(View.INVISIBLE);
+        }
+
+        if (mGridView != null) {
+            mGridView.setVisibility(View.VISIBLE);
+        }
+
+        if (mLoadingFailedTv != null) {
+            mLoadingFailedTv.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void showLoadingFailed() {
+        if (mLoadingBar != null) {
+            mLoadingBar.setVisibility(View.INVISIBLE);
+        }
+
+        if (mGridView != null) {
+            mGridView.setVisibility(View.INVISIBLE);
+        }
+
+        if (mLoadingFailedTv != null) {
+            mLoadingFailedTv.setVisibility(View.VISIBLE);
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -59,14 +113,14 @@ public class MainActivity extends AppCompatActivity {
         menuSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (MovieData.getInstance().getCurrentGridArrangement().getPosition() == position){
+                if (MovieData.getInstance().getCurrentGridArrangement().getPosition() == position) {
                     //User selected a sort order that is already on display.
                     return;
                 }
 
-                if (position == MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR.getPosition()){
+                if (position == MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR.getPosition()) {
                     MovieData.getInstance().setCurrentGridArrangement(MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR);
-                }else if (position == MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED.getPosition()){
+                } else if (position == MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED.getPosition()) {
                     MovieData.getInstance().setCurrentGridArrangement(MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED);
                 }
 
@@ -101,23 +155,35 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(s);
 
             if (s != null && !s.equals("")) {
-                MovieData.getInstance().movieDetailsArray = JsonUtils.parseMovieResponseJson(s);
+                try {
+                    MovieData.getInstance().movieDetailsArray = JsonUtils.parseMovieResponseJson(s);
+                } catch (Exception e) {
+                    showLoadingFailed();
+                }
 
                 if (MovieData.getInstance().movieDetailsArray == null) {
+                    Log.d("Main Activity", "movieDetailsArray not initialized");
+                    return;
+                }
+
+                if (mGridView == null) {
+                    Log.d("Main Activity", "GridView not initialized");
                     return;
                 }
                 MovieDetailsAdapter adapter = new MovieDetailsAdapter(getApplicationContext(),
                         MovieData.getInstance().movieDetailsArray);
 
-                GridView gridView = findViewById(R.id.movies_gridview);
-                gridView.setAdapter(adapter);
-                gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                mGridView.setAdapter(adapter);
+                mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         LaunchMovieDetailActivity(position);
                     }
                 });
                 setTitle(MovieData.getInstance().getCurrentGridArrangement().getCaption());
+                showGridContent();
+            } else {
+                showLoadingFailed();
             }
         }
 
