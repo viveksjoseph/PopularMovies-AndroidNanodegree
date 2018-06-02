@@ -102,7 +102,7 @@ public class JsonUtils {
         return movieDetails;
     }
 
-    public static ArrayList<MovieDetails> parseMovieResponseJson(String json) {
+    public static ArrayList<MovieDetails> parseMovieResponseJson(String json) throws Exception{
 
         ArrayList<MovieDetails> moviesArray = null;
         try {
@@ -121,10 +121,12 @@ public class JsonUtils {
                 }
             } else {
                 Log.d("JsonUtils", "The returned response contains errors, or do not contain results");
+                throw new Exception("Response contains errors, or do not contain results");
             }
 
         } catch (JSONException e) {
             Log.d("JSONUtils", "Unable to parse Movie JSON: " + e.getMessage());
+            throw new Exception("Unable to parse Movie JSON");
         }
         return moviesArray;
     }
