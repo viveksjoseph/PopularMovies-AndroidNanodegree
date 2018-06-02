@@ -16,6 +16,7 @@ import com.squareup.picasso.Picasso;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class MovieDetailActivity extends AppCompatActivity {
 
@@ -65,7 +66,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         movieRatingBar.setRating((float) movieDetail.getVoteAverage()/2);
 
         TextView movieReleaseDate = (TextView) findViewById(R.id.release_date_tv);
-        DateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy");
+        DateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.US);
         movieReleaseDate.setText(dateFormat.format(movieDetail.getReleaseDate()));
 
         TextView movieSynopsis = (TextView) findViewById(R.id.synopsis_tv);
