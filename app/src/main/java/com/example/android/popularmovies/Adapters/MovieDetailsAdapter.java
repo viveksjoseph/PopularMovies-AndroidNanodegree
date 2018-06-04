@@ -13,11 +13,11 @@ import com.example.android.popularmovies.Data.MovieDetails;
 import com.example.android.popularmovies.R;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class MovieDetailsAdapter extends ArrayAdapter<MovieDetails> {
 
-    public MovieDetailsAdapter(Context context, ArrayList<MovieDetails> movieDetailsArray) {
+    public MovieDetailsAdapter(Context context, List<MovieDetails> movieDetailsArray) {
         super(context, 0, movieDetailsArray);
     }
 

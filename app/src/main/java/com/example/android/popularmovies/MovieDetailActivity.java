@@ -59,7 +59,9 @@ public class MovieDetailActivity extends AppCompatActivity {
             return;
         }
 
-        MovieDetails movieDetail = MovieData.getInstance().movieDetailsArray.get(position);
+        MovieDetails movieDetail = MovieData.getInstance().getMovieDetailsArray()
+                .getResultsArray()
+                .get(position);
         if (movieDetail == null) {
             Log.d("MovieDetailActivity", "Movie data could not be extracted");
             finish();

@@ -159,12 +159,12 @@ public class MainActivity extends AppCompatActivity {
 
             if (s != null && !s.equals("")) {
                 try {
-                    MovieData.getInstance().movieDetailsArray = JsonUtils.parseMovieResponseJson(s);
+                    MovieData.getInstance().setMovieDetailsArray(JsonUtils.parseMovieResponseJson(s));
                 } catch (Exception e) {
                     showLoadingFailed();
                 }
 
-                if (MovieData.getInstance().movieDetailsArray == null) {
+                if (MovieData.getInstance().getMovieDetailsArray() == null) {
                     Log.d("Main Activity", "movieDetailsArray not initialized");
                     return;
                 }
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 MovieDetailsAdapter adapter = new MovieDetailsAdapter(getApplicationContext(),
-                        MovieData.getInstance().movieDetailsArray);
+                        MovieData.getInstance().getMovieDetailsArray().getResultsArray());
 
                 mGridView.setAdapter(adapter);
                 mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

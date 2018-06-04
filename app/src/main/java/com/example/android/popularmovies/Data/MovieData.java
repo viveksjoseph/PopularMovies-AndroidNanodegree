@@ -1,7 +1,5 @@
 package com.example.android.popularmovies.Data;
 
-import java.util.ArrayList;
-
 public class MovieData {
 
     public interface ArrangementInterface {
@@ -50,12 +48,10 @@ public class MovieData {
     private static MovieData instance = null;
     private GridArrangement currentGridArrangement;
 
-    public ArrayList<MovieDetails> movieDetailsArray;
+    private MovieResponse movieDetailsArray = null;
 
     private MovieData() {
         currentGridArrangement = GridArrangement.ARRANGEMENT_MOST_POPULAR;
-
-        movieDetailsArray = new ArrayList<>();
     }
 
     public void setCurrentGridArrangement(GridArrangement currentArrangement) {
@@ -71,5 +67,13 @@ public class MovieData {
             instance = new MovieData();
         }
         return instance;
+    }
+
+    public MovieResponse getMovieDetailsArray() {
+        return this.movieDetailsArray;
+    }
+
+    public void setMovieDetailsArray(MovieResponse movieDetailsArray) {
+        this.movieDetailsArray = movieDetailsArray;
     }
 }
