@@ -102,7 +102,7 @@ public class JsonUtils {
         return movieDetails;
     }
 
-    public static ArrayList<MovieDetails> parseMovieResponseJson(String json) throws Exception{
+    public static ArrayList<MovieDetails> parseMovieResponseJson(String json) throws Exception {
 
         ArrayList<MovieDetails> moviesArray = null;
         try {

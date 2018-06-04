@@ -6,19 +6,21 @@ public class MovieData {
 
     public interface ArrangementInterface {
         String getCaption();
+
         int getPosition();
+
         String getString();
     }
 
     public enum GridArrangement implements ArrangementInterface {
         ARRANGEMENT_MOST_POPULAR {
             @Override
-            public String getCaption(){
+            public String getCaption() {
                 return "Popular Movies";
             }
 
             @Override
-            public int getPosition(){
+            public int getPosition() {
                 return 0;
             }
 
@@ -34,7 +36,7 @@ public class MovieData {
             }
 
             @Override
-            public int getPosition(){
+            public int getPosition() {
                 return 1;
             }
 

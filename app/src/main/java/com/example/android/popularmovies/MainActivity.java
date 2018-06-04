@@ -24,20 +24,23 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MainActivity extends AppCompatActivity {
 
-    private ProgressBar mLoadingBar = null;
-    private GridView mGridView = null;
-    private TextView mLoadingFailedTv = null;
+    @BindView(R.id.loading_bar)
+    ProgressBar mLoadingBar;
+    @BindView(R.id.movies_gridview)
+    GridView mGridView;
+    @BindView(R.id.loading_failed_tv)
+    TextView mLoadingFailedTv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mLoadingBar = (ProgressBar) findViewById(R.id.loading_bar);
-        mGridView = (GridView) findViewById(R.id.movies_gridview);
-        mLoadingFailedTv = (TextView) findViewById(R.id.loading_failed_tv);
+        ButterKnife.bind(this);
 
         setTitle(MovieData.getInstance().getCurrentGridArrangement().getCaption());
 

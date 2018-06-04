@@ -2,7 +2,6 @@ package com.example.android.popularmovies.Utils;
 
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
 
 import com.example.android.popularmovies.R;
 
@@ -18,10 +17,6 @@ public class NetworkUtils {
     private static final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3";
     private static final String MOVIEDB_MOVIE_PATH = "movie";
     private static final String MOVIEDB_APIKEY_QUERY = "api_key";
-
-    public enum UserPreference {
-
-    }
 
     // return entire result from HTTP response.
     public static String getResponseFromHttpUrl(URL url) throws IOException {

@@ -15,18 +15,34 @@ import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class MovieDetailActivity extends AppCompatActivity {
 
     public static final String MOVIE_EXTRA_POSITION = "movie_extra_position";
     private static final int MOVIE_NOT_FOUND_POSITION = -1;
 
+    @BindView(R.id.movie_banner_iv)
+    ImageView mMovieBannerImage;
+    @BindView(R.id.org_title_tv)
+    TextView mMovieOrgTitle;
+    @BindView(R.id.average_rating_tv)
+    TextView mMovieAvgRating;
+    @BindView(R.id.average_rating_rb)
+    RatingBar mMovieRatingBar;
+    @BindView(R.id.release_date_tv)
+    TextView mMovieReleaseDate;
+    @BindView(R.id.synopsis_tv)
+    TextView movieSynopsis;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
+        ButterKnife.bind(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
@@ -50,28 +66,22 @@ public class MovieDetailActivity extends AppCompatActivity {
             return;
         }
 
-        ImageView movieBannerImage = (ImageView) findViewById(R.id.movie_banner_iv);
         Picasso.with(this)
                 .load(movieDetail.getBackdropPath())
-                .into(movieBannerImage);
+                .into(mMovieBannerImage);
         setTitle(movieDetail.getMovieTitle());
 
-        TextView movieOrgTitle = (TextView) findViewById(R.id.org_title_tv);
-        movieOrgTitle.setText(movieDetail.getOriginalTitle());
+        mMovieOrgTitle.setText(movieDetail.getOriginalTitle());
 
-        TextView movieAvgRating = (TextView) findViewById(R.id.average_rating_tv);
         String voteAvgText = String.valueOf(movieDetail.getVoteAverage()) +
                 getString(R.string.avg_vote_out_of);
-        movieAvgRating.setText(voteAvgText);
+        mMovieAvgRating.setText(voteAvgText);
 
-        RatingBar movieRatingBar = (RatingBar) findViewById(R.id.average_rating_rb);
-        movieRatingBar.setRating((float) movieDetail.getVoteAverage()/2);
+        mMovieRatingBar.setRating((float) movieDetail.getVoteAverage() / 2);
 
-        TextView movieReleaseDate = (TextView) findViewById(R.id.release_date_tv);
         DateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.US);
-        movieReleaseDate.setText(dateFormat.format(movieDetail.getReleaseDate()));
+        mMovieReleaseDate.setText(dateFormat.format(movieDetail.getReleaseDate()));
 
-        TextView movieSynopsis = (TextView) findViewById(R.id.synopsis_tv);
         movieSynopsis.setText(movieDetail.getOverview());
     }
 
