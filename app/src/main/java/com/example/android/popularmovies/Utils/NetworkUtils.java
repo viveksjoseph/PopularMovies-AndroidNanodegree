@@ -6,11 +6,12 @@ import android.net.Uri;
 import com.example.android.popularmovies.R;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Scanner;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class NetworkUtils {
 
@@ -20,21 +21,16 @@ public class NetworkUtils {
 
     // return entire result from HTTP response.
     public static String getResponseFromHttpUrl(URL url) throws IOException {
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        try {
-            InputStream in = urlConnection.getInputStream();
+        OkHttpClient urlConnectionClient = new OkHttpClient();
+        Request connectionRequest = new Request.Builder()
+                .url(url)
+                .build();
 
-            Scanner scanner = new Scanner(in);
-            scanner.useDelimiter("\\A");
-
-            boolean hasInput = scanner.hasNext();
-            if (hasInput) {
-                return scanner.next();
-            } else {
-                return null;
+        try (Response urlResponse = urlConnectionClient.newCall(connectionRequest).execute()) {
+            if (!urlResponse.isSuccessful()) {
+                throw new IOException("Unexpected Response: " + urlResponse);
             }
-        } finally {
-            urlConnection.disconnect();
+            return urlResponse.body().string();
         }
     }
 

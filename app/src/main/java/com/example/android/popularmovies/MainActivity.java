@@ -19,6 +19,7 @@ import com.example.android.popularmovies.Adapters.MovieDetailsAdapter;
 import com.example.android.popularmovies.Data.MovieData;
 import com.example.android.popularmovies.Utils.JsonUtils;
 import com.example.android.popularmovies.Utils.NetworkUtils;
+import com.google.gson.JsonParseException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
                     MovieData.getInstance().getCurrentGridArrangement().getString());
         } catch (MalformedURLException e) {
             Log.d("Main Activity", "creating movieQueryUrl failed: " + e.getMessage());
+            showLoadingFailed();
         } finally {
             if (movieQueryUrl != null) {
                 new movieQueryTask().execute(movieQueryUrl);
@@ -122,8 +124,11 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if (position == MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR.getPosition()) {
+
                     MovieData.getInstance().setCurrentGridArrangement(MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR);
+
                 } else if (position == MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED.getPosition()) {
+
                     MovieData.getInstance().setCurrentGridArrangement(MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED);
                 }
 
@@ -160,17 +165,20 @@ public class MainActivity extends AppCompatActivity {
             if (s != null && !s.equals("")) {
                 try {
                     MovieData.getInstance().setMovieDetailsArray(JsonUtils.parseMovieResponseJson(s));
-                } catch (Exception e) {
+                } catch (JsonParseException e) {
+                    Log.d("Main Activity", "response JSON could not be deserialized: " + e.getMessage());
                     showLoadingFailed();
                 }
 
                 if (MovieData.getInstance().getMovieDetailsArray() == null) {
                     Log.d("Main Activity", "movieDetailsArray not initialized");
+                    showLoadingFailed();
                     return;
                 }
 
                 if (mGridView == null) {
                     Log.d("Main Activity", "GridView not initialized");
+                    showLoadingFailed();
                     return;
                 }
                 MovieDetailsAdapter adapter = new MovieDetailsAdapter(getApplicationContext(),
