@@ -6,7 +6,6 @@
     <ImageView
         android:id="@+id/grid_movie_icon"
         style="@style/ImageView_Layout"
-        android:contentDescription="@string/grid_movie_description"
-        />
+        android:contentDescription="@string/grid_movie_description" />
 
 </FrameLayout>

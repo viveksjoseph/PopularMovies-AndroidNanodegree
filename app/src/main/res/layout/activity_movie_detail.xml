@@ -11,20 +11,20 @@
         android:id="@+id/movie_banner_iv"
         style="@style/ImageView_Layout"
         android:layout_height="200dp"
-        android:contentDescription="@string/detail_movie_description"/>
+        android:contentDescription="@string/detail_movie_description" />
 
     <TextView
         android:id="@+id/org_title_tv"
         style="@style/TextView_Layout_Title"
         android:layout_alignBottom="@+id/movie_banner_iv"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_below="@+id/movie_banner_iv">
 
         <android.support.constraint.ConstraintLayout

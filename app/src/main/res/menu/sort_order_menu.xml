@@ -4,7 +4,6 @@
     <item
         android:id="@+id/movieSort"
         android:title="@string/menu_title"
-        app:showAsAction="always"
         app:actionLayout="@layout/menu_sort_spinner"
-        />
+        app:showAsAction="always" />
 </menu>
