@@ -1,40 +1,77 @@
 package com.example.android.popularmovies.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
 import com.example.android.popularmovies.Data.MovieDetails;
+import com.example.android.popularmovies.MovieDetailActivity;
 import com.example.android.popularmovies.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class MovieDetailsAdapter extends ArrayAdapter<MovieDetails> {
+public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapter.MovieDetailsViewHolder> {
 
-    public MovieDetailsAdapter(Context context, List<MovieDetails> movieDetailsArray) {
-        super(context, 0, movieDetailsArray);
+    private List<MovieDetails> mMovieDetailList;
+    private Context mContext;
+
+    public MovieDetailsAdapter(Context context) {
+        mContext = context;
+    }
+
+    public class MovieDetailsViewHolder extends RecyclerView.ViewHolder {
+
+        public final ImageView mMoviePosterIv;
+
+        private MovieDetailsViewHolder(View view) {
+            super(view);
+            mMoviePosterIv = view.findViewById(R.id.grid_movie_icon);
+        }
     }
 
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        MovieDetails currentMovie = getItem(position);
+    public MovieDetailsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        Context context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(context);
 
-        if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.grid_item_movies, parent, false);
+        View view = inflater.inflate(R.layout.grid_item_movies, parent, false);
+        return new MovieDetailsViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull MovieDetailsViewHolder holder, final int position) {
+        Picasso.with(mContext)
+                .load(mMovieDetailList.get(position).getPosterPath())
+                .into(holder.mMoviePosterIv);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(mContext, MovieDetailActivity.class);
+                intent.putExtra(MovieDetailActivity.MOVIE_EXTRA_POSITION, position);
+                mContext.startActivity(intent);
+            }
+        });
+    }
+
+    @Override
+    public int getItemCount() {
+        if (mMovieDetailList == null) {
+            return 0;
         }
 
-        ImageView gridMovieIv = (ImageView) convertView.findViewById(R.id.grid_movie_icon);
-        Picasso.with(getContext())
-                .load(currentMovie.getPosterPath())
-                .into(gridMovieIv);
+        return mMovieDetailList.size();
+    }
 
-        return convertView;
+    public void setMovieData(List<MovieDetails> movieList) {
+        this.mMovieDetailList = movieList;
+        notifyDataSetChanged();
     }
 }
+

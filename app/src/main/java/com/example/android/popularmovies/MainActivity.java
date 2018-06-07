@@ -1,16 +1,16 @@
 package com.example.android.popularmovies;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -30,12 +30,16 @@ import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final static int NUM_COL_FOR_GRID = 3;
+
     @BindView(R.id.loading_bar)
     ProgressBar mLoadingBar;
-    @BindView(R.id.movies_gridview)
-    GridView mGridView;
+    @BindView(R.id.movies_recyclerview)
+    RecyclerView mRecyclerView;
     @BindView(R.id.loading_failed_tv)
     TextView mLoadingFailedTv;
+
+    MovieDetailsAdapter mMovieAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
         setTitle(MovieData.getInstance().getCurrentGridArrangement().getCaption());
 
+        LoadRecyclerView();
         makeMovieQuery();
     }
 
@@ -66,13 +71,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void LoadRecyclerView() {
+        if (mRecyclerView == null) {
+            Log.d("Main Activity", "Recycler View not initialized");
+            showLoadingFailed();
+            return;
+        }
+
+        mMovieAdapter = new MovieDetailsAdapter(getApplicationContext());
+        GridLayoutManager layoutManager = new GridLayoutManager(this, NUM_COL_FOR_GRID);
+        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setAdapter(mMovieAdapter);
+    }
+
     private void showLoadingProgress() {
         if (mLoadingBar != null) {
             mLoadingBar.setVisibility(View.VISIBLE);
         }
 
-        if (mGridView != null) {
-            mGridView.setVisibility(View.INVISIBLE);
+        if (mRecyclerView != null) {
+            mRecyclerView.setVisibility(View.INVISIBLE);
         }
 
         if (mLoadingFailedTv != null) {
@@ -85,8 +104,8 @@ public class MainActivity extends AppCompatActivity {
             mLoadingBar.setVisibility(View.INVISIBLE);
         }
 
-        if (mGridView != null) {
-            mGridView.setVisibility(View.VISIBLE);
+        if (mRecyclerView != null) {
+            mRecyclerView.setVisibility(View.VISIBLE);
         }
 
         if (mLoadingFailedTv != null) {
@@ -99,8 +118,8 @@ public class MainActivity extends AppCompatActivity {
             mLoadingBar.setVisibility(View.INVISIBLE);
         }
 
-        if (mGridView != null) {
-            mGridView.setVisibility(View.INVISIBLE);
+        if (mRecyclerView != null) {
+            mRecyclerView.setVisibility(View.INVISIBLE);
         }
 
         if (mLoadingFailedTv != null) {
@@ -166,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     MovieData.getInstance().setMovieDetailsArray(JsonUtils.parseMovieResponseJson(s));
                 } catch (JsonParseException e) {
-                    Log.d("Main Activity", "response JSON could not be deserialized: " + e.getMessage());
+                    Log.d("Main Activity", "response JSON could not be de-serialized: " + e.getMessage());
                     showLoadingFailed();
                 }
 
@@ -176,32 +195,13 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (mGridView == null) {
-                    Log.d("Main Activity", "GridView not initialized");
-                    showLoadingFailed();
-                    return;
-                }
-                MovieDetailsAdapter adapter = new MovieDetailsAdapter(getApplicationContext(),
-                        MovieData.getInstance().getMovieDetailsArray().getResultsArray());
-
-                mGridView.setAdapter(adapter);
-                mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        LaunchMovieDetailActivity(position);
-                    }
-                });
                 setTitle(MovieData.getInstance().getCurrentGridArrangement().getCaption());
+                mMovieAdapter.setMovieData(MovieData.getInstance().getMovieDetailsArray().getResultsArray());
+                mMovieAdapter.notifyDataSetChanged();
                 showGridContent();
             } else {
                 showLoadingFailed();
             }
-        }
-
-        private void LaunchMovieDetailActivity(int position) {
-            Intent intent = new Intent(getApplicationContext(), MovieDetailActivity.class);
-            intent.putExtra(MovieDetailActivity.MOVIE_EXTRA_POSITION, position);
-            startActivity(intent);
         }
     }
 }
