@@ -1,7 +1,11 @@
 package com.example.android.popularmovies;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -28,9 +32,13 @@ import java.net.URL;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements LoaderCallbacks<String> {
 
     private final static int NUM_COL_FOR_GRID = 3;
+    private final static int MOVIE_QUERY_LOADER_POPULAR = 2334;
+    private final static int MOVIE_QUERY_LOADER_HIGHRATED = 2345;
+    private final static String MOVIE_QUERY_URL_EXTRA = "movieUrlExtra";
 
     @BindView(R.id.loading_bar)
     ProgressBar mLoadingBar;
@@ -53,24 +61,6 @@ public class MainActivity extends AppCompatActivity {
         makeMovieQuery();
     }
 
-    private void makeMovieQuery() {
-        URL movieQueryUrl = null;
-
-        showLoadingProgress();
-
-        try {
-            movieQueryUrl = NetworkUtils.BuildQueryURL(this,
-                    MovieData.getInstance().getCurrentGridArrangement().getString());
-        } catch (MalformedURLException e) {
-            Log.d("Main Activity", "creating movieQueryUrl failed: " + e.getMessage());
-            showLoadingFailed();
-        } finally {
-            if (movieQueryUrl != null) {
-                new movieQueryTask().execute(movieQueryUrl);
-            }
-        }
-    }
-
     private void LoadRecyclerView() {
         if (mRecyclerView == null) {
             Log.d("Main Activity", "Recycler View not initialized");
@@ -83,6 +73,28 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setAdapter(mMovieAdapter);
+    }
+
+    private void makeMovieQuery() {
+        showLoadingProgress();
+
+        String movieQueryUrl = NetworkUtils.BuildQueryURL(this,
+                MovieData.getInstance().getCurrentGridArrangement().getString());
+
+        if (movieQueryUrl == null || movieQueryUrl.isEmpty()) {
+            showLoadingFailed();
+            return;
+        }
+
+        Bundle loaderQueryBundle = new Bundle();
+        loaderQueryBundle.putString(MOVIE_QUERY_URL_EXTRA, movieQueryUrl);
+
+        String currentArrangement = MovieData.getInstance().getCurrentGridArrangement().getString();
+        if (currentArrangement.equals(MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED.getString())) {
+            getSupportLoaderManager().initLoader(MOVIE_QUERY_LOADER_HIGHRATED, loaderQueryBundle, MainActivity.this);
+        } else if (currentArrangement.equals(MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR.getString())) {
+            getSupportLoaderManager().initLoader(MOVIE_QUERY_LOADER_POPULAR, loaderQueryBundle, MainActivity.this);
+        }
     }
 
     private void showLoadingProgress() {
@@ -164,44 +176,74 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    public class movieQueryTask extends AsyncTask<URL, Void, String> {
-        @Override
-        protected String doInBackground(URL... urls) {
-            URL searchUrl = urls[0];
-            String movieQueryResults = null;
-            try {
-                movieQueryResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
-            } catch (IOException e) {
-                Log.d("Main Activity", "getResponseFromHttpUrl failed: " + e.getMessage());
-            }
-            return movieQueryResults;
-        }
+    @NonNull
+    @Override
+    public Loader<String> onCreateLoader(int id, @Nullable final Bundle args) {
+        return new AsyncTaskLoader<String>(this) {
 
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-
-            if (s != null && !s.equals("")) {
-                try {
-                    MovieData.getInstance().setMovieDetailsArray(JsonUtils.parseMovieResponseJson(s));
-                } catch (JsonParseException e) {
-                    Log.d("Main Activity", "response JSON could not be de-serialized: " + e.getMessage());
-                    showLoadingFailed();
-                }
-
-                if (MovieData.getInstance().getMovieDetailsArray() == null) {
-                    Log.d("Main Activity", "movieDetailsArray not initialized");
-                    showLoadingFailed();
+            @Override
+            protected void onStartLoading() {
+                super.onStartLoading();
+                if (args == null) {
                     return;
                 }
-
-                setTitle(MovieData.getInstance().getCurrentGridArrangement().getCaption());
-                mMovieAdapter.setMovieData(MovieData.getInstance().getMovieDetailsArray().getResultsArray());
-                mMovieAdapter.notifyDataSetChanged();
-                showGridContent();
-            } else {
-                showLoadingFailed();
+                forceLoad();
             }
+
+            @Override
+            public String loadInBackground() {
+                String searchQueryString = args.getString(MOVIE_QUERY_URL_EXTRA);
+
+                if (searchQueryString == null || searchQueryString.isEmpty()) {
+                    return null;
+                }
+
+                URL searchUrl;
+                try {
+                    searchUrl = NetworkUtils.BuildUrlFromString(searchQueryString);
+                } catch (MalformedURLException e) {
+                    Log.d("Main Activity", "Building URL from String failed: " + e.getMessage());
+                    return null;
+                }
+
+                try {
+                    return NetworkUtils.getResponseFromHttpUrl(searchUrl);
+                } catch (IOException e) {
+                    Log.d("Main Activity", "getResponseFromHttpUrl failed: " + e.getMessage());
+                    return null;
+                }
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<String> loader, String data) {
+        if (data == null || data.isEmpty()) {
+            showLoadingFailed();
+            return;
         }
+
+        try {
+            MovieData.getInstance().setMovieDetailsArray(JsonUtils.parseMovieResponseJson(data));
+        } catch (JsonParseException e) {
+            Log.d("Main Activity", "response JSON could not be de-serialized: " + e.getMessage());
+            showLoadingFailed();
+        }
+
+        if (MovieData.getInstance().getMovieDetailsArray() == null) {
+            Log.d("Main Activity", "movieDetailsArray not initialized");
+            showLoadingFailed();
+            return;
+        }
+
+        setTitle(MovieData.getInstance().getCurrentGridArrangement().getCaption());
+        mMovieAdapter.setMovieData(MovieData.getInstance().getMovieDetailsArray().getResultsArray());
+        mMovieAdapter.notifyDataSetChanged();
+        showGridContent();
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<String> loader) {
+
     }
 }
