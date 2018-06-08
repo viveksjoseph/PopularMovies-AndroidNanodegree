@@ -39,14 +39,13 @@ public class NetworkUtils {
         return url;
     }
 
-    public static URL BuildQueryURL(Context context, String sortPreference) throws MalformedURLException {
+    public static String BuildQueryURL(Context context, String sortPreference) {
         Uri queryUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
                 .appendPath(MOVIEDB_MOVIE_PATH)
                 .appendPath(sortPreference)
                 .appendQueryParameter(MOVIEDB_APIKEY_QUERY, context.getString(R.string.moviedb_api))
                 .build();
 
-        URL movieQueryUrl = BuildUrlFromString(queryUri.toString());
-        return movieQueryUrl;
+        return queryUri.toString();
     }
 }
