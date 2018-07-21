@@ -59,7 +59,8 @@ public class MovieDetailActivity extends AppCompatActivity {
             return;
         }
 
-        MovieDetails movieDetail = MovieData.getInstance().getMovieDetailsArray()
+        MovieData.GridArrangement currentArrangement = MovieData.getInstance().getCurrentGridArrangement();
+        MovieDetails movieDetail = MovieData.getInstance().getMovieDetailsArray(currentArrangement)
                 .getResultsArray()
                 .get(position);
         if (movieDetail == null) {

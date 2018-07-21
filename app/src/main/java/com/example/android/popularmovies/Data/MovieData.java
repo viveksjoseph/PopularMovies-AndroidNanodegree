@@ -1,5 +1,8 @@
 package com.example.android.popularmovies.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MovieData {
 
     public interface ArrangementInterface {
@@ -46,21 +49,9 @@ public class MovieData {
     }
 
     private static MovieData instance = null;
-    private GridArrangement currentGridArrangement;
 
-    private MovieResponse movieDetailsArray = null;
-
-    private MovieData() {
-        currentGridArrangement = GridArrangement.ARRANGEMENT_MOST_POPULAR;
-    }
-
-    public void setCurrentGridArrangement(GridArrangement currentArrangement) {
-        this.currentGridArrangement = currentArrangement;
-    }
-
-    public GridArrangement getCurrentGridArrangement() {
-        return this.currentGridArrangement;
-    }
+    private GridArrangement mCurrentGridArrangement;
+    private List<MovieResponse> mMovieDetailsArray;
 
     public static MovieData getInstance() {
         if (instance == null) {
@@ -69,11 +60,33 @@ public class MovieData {
         return instance;
     }
 
-    public MovieResponse getMovieDetailsArray() {
-        return this.movieDetailsArray;
+    private MovieData() {
+        this.mCurrentGridArrangement = GridArrangement.ARRANGEMENT_MOST_POPULAR;
+
+        ReloadCachedResponses();
     }
 
-    public void setMovieDetailsArray(MovieResponse movieDetailsArray) {
-        this.movieDetailsArray = movieDetailsArray;
+    public void setCurrentGridArrangement(GridArrangement currentArrangement) {
+        this.mCurrentGridArrangement = currentArrangement;
     }
+
+    public GridArrangement getCurrentGridArrangement() {
+        return this.mCurrentGridArrangement;
+    }
+
+    public MovieResponse getMovieDetailsArray(GridArrangement arrangement) {
+        return this.mMovieDetailsArray.get(arrangement.getPosition());
+    }
+
+    public void setMovieDetailsArray(GridArrangement arrangement, MovieResponse movieDetailsArray) {
+        this.mMovieDetailsArray.add(arrangement.getPosition(), movieDetailsArray);
+    }
+
+    public void ReloadCachedResponses() {
+        this.mMovieDetailsArray = new ArrayList<>();
+        for (int i = 0; i < GridArrangement.values().length; i++) {
+            this.mMovieDetailsArray.add(null);
+        }
+    }
+
 }

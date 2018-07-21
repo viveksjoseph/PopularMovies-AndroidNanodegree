@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.example.android.popularmovies.Adapters.MovieDetailsAdapter;
 import com.example.android.popularmovies.Data.MovieData;
+import com.example.android.popularmovies.Data.MovieResponse;
 import com.example.android.popularmovies.Utils.JsonUtils;
 import com.example.android.popularmovies.Utils.NetworkUtils;
 import com.google.gson.JsonParseException;
@@ -36,9 +37,14 @@ public class MainActivity extends AppCompatActivity
         implements LoaderCallbacks<String> {
 
     private final static int NUM_COL_FOR_GRID = 3;
+
     private final static int MOVIE_QUERY_LOADER_POPULAR = 2334;
-    private final static int MOVIE_QUERY_LOADER_HIGHRATED = 2345;
-    private final static String MOVIE_QUERY_URL_EXTRA = "movieUrlExtra";
+    private final static int MOVIE_QUERY_LOADER_HIGHRATED = 3445;
+    private final static String MOVIE_POPULAR_QUERY_URL_EXTRA = "moviePopularUrlExtra";
+    private final static String MOVIE_HIGH_RATED_QUERY_URL_EXTRA = "movieHighRatedUrlExtra";
+
+    private final static String SPINNER_STATE_SAVE_KEY = "spinnerStateSave";
+
 
     @BindView(R.id.loading_bar)
     ProgressBar mLoadingBar;
@@ -47,6 +53,7 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.loading_failed_tv)
     TextView mLoadingFailedTv;
 
+    private int mMenuSpinnerLocation = 0;
     MovieDetailsAdapter mMovieAdapter = null;
 
     @Override
@@ -78,22 +85,31 @@ public class MainActivity extends AppCompatActivity
     private void makeMovieQuery() {
         showLoadingProgress();
 
-        String movieQueryUrl = NetworkUtils.BuildQueryURL(this,
-                MovieData.getInstance().getCurrentGridArrangement().getString());
+        String movieQueryUrlPopular = NetworkUtils.BuildQueryURL(this,
+                MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR.getString());
+        String movieQueryUrlHighRated = NetworkUtils.BuildQueryURL(this,
+                MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED.getString());
 
-        if (movieQueryUrl == null || movieQueryUrl.isEmpty()) {
+        if (movieQueryUrlPopular == null || movieQueryUrlPopular.isEmpty() ||
+                movieQueryUrlHighRated == null || movieQueryUrlHighRated.isEmpty()) {
             showLoadingFailed();
             return;
         }
 
         Bundle loaderQueryBundle = new Bundle();
-        loaderQueryBundle.putString(MOVIE_QUERY_URL_EXTRA, movieQueryUrl);
+        loaderQueryBundle.putString(MOVIE_POPULAR_QUERY_URL_EXTRA, movieQueryUrlPopular);
+        loaderQueryBundle.putString(MOVIE_HIGH_RATED_QUERY_URL_EXTRA, movieQueryUrlHighRated);
 
-        String currentArrangement = MovieData.getInstance().getCurrentGridArrangement().getString();
-        if (currentArrangement.equals(MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED.getString())) {
-            getSupportLoaderManager().initLoader(MOVIE_QUERY_LOADER_HIGHRATED, loaderQueryBundle, MainActivity.this);
-        } else if (currentArrangement.equals(MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR.getString())) {
-            getSupportLoaderManager().initLoader(MOVIE_QUERY_LOADER_POPULAR, loaderQueryBundle, MainActivity.this);
+
+
+        if (MovieData.getInstance().getMovieDetailsArray(MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR) == null ||
+                MovieData.getInstance().getMovieDetailsArray(MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED) == null) {
+            getSupportLoaderManager().initLoader(MOVIE_QUERY_LOADER_POPULAR,
+                    loaderQueryBundle, MainActivity.this);
+            getSupportLoaderManager().initLoader(MOVIE_QUERY_LOADER_HIGHRATED,
+                    loaderQueryBundle, MainActivity.this);
+        } else {
+            SetMovieResults();
         }
     }
 
@@ -146,6 +162,7 @@ public class MainActivity extends AppCompatActivity
 
         MenuItem menuItem = menu.findItem(R.id.movieSort);
         Spinner menuSpinner = (Spinner) menuItem.getActionView();
+        menuSpinner.setSelection(MovieData.getInstance().getCurrentGridArrangement().getPosition());
         menuSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -178,7 +195,7 @@ public class MainActivity extends AppCompatActivity
 
     @NonNull
     @Override
-    public Loader<String> onCreateLoader(int id, @Nullable final Bundle args) {
+    public Loader<String> onCreateLoader(final int id, @Nullable final Bundle args) {
         return new AsyncTaskLoader<String>(this) {
 
             @Override
@@ -192,7 +209,12 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public String loadInBackground() {
-                String searchQueryString = args.getString(MOVIE_QUERY_URL_EXTRA);
+                String searchQueryString = null;
+                if (id == MOVIE_QUERY_LOADER_POPULAR){
+                    searchQueryString = args.getString(MOVIE_POPULAR_QUERY_URL_EXTRA);
+                }else if (id == MOVIE_QUERY_LOADER_HIGHRATED){
+                    searchQueryString = args.getString(MOVIE_HIGH_RATED_QUERY_URL_EXTRA);
+                }
 
                 if (searchQueryString == null || searchQueryString.isEmpty()) {
                     return null;
@@ -209,7 +231,7 @@ public class MainActivity extends AppCompatActivity
                 try {
                     return NetworkUtils.getResponseFromHttpUrl(searchUrl);
                 } catch (IOException e) {
-                    Log.d("Main Activity", "getResponseFromHttpUrl failed: " + e.getMessage());
+                    Log.d("Main Activity", "getResponseFromHttpUrl failed: " + e.getLocalizedMessage());
                     return null;
                 }
             }
@@ -223,27 +245,50 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
+        MovieResponse movieResponse = null;
         try {
-            MovieData.getInstance().setMovieDetailsArray(JsonUtils.parseMovieResponseJson(data));
+            movieResponse = JsonUtils.parseMovieResponseJson(data);
         } catch (JsonParseException e) {
             Log.d("Main Activity", "response JSON could not be de-serialized: " + e.getMessage());
-            showLoadingFailed();
-        }
-
-        if (MovieData.getInstance().getMovieDetailsArray() == null) {
-            Log.d("Main Activity", "movieDetailsArray not initialized");
             showLoadingFailed();
             return;
         }
 
-        setTitle(MovieData.getInstance().getCurrentGridArrangement().getCaption());
-        mMovieAdapter.setMovieData(MovieData.getInstance().getMovieDetailsArray().getResultsArray());
-        mMovieAdapter.notifyDataSetChanged();
-        showGridContent();
+        if (loader.getId() == MOVIE_QUERY_LOADER_POPULAR) {
+
+            MovieData.getInstance().setMovieDetailsArray(MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR,
+                    movieResponse);
+
+        } else if (loader.getId() == MOVIE_QUERY_LOADER_HIGHRATED) {
+
+            MovieData.getInstance().setMovieDetailsArray(MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED,
+                    movieResponse);
+
+        }
+
+        getSupportLoaderManager().destroyLoader(loader.getId());
+        SetMovieResults();
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<String> loader) {
 
+    }
+
+    private void SetMovieResults() {
+
+        MovieData.GridArrangement currentArrangement = MovieData.getInstance().getCurrentGridArrangement();
+        MovieResponse response = MovieData.getInstance().getMovieDetailsArray(currentArrangement);
+
+        if(response == null){
+            // data not loaded yet. Return
+            return;
+        }
+
+        setTitle(MovieData.getInstance().getCurrentGridArrangement().getCaption());
+
+        mMovieAdapter.setMovieData(response.getResultsArray());
+        mMovieAdapter.notifyDataSetChanged();
+        showGridContent();
     }
 }
