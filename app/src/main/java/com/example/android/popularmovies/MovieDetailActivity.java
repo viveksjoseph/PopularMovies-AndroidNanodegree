@@ -261,12 +261,22 @@ public class MovieDetailActivity extends AppCompatActivity implements LoaderCall
 
             childMap.put(getResources().getString(R.string.exp_heading_reviews), reviewsList);
 
-            MovieExpandableListAdapter reviewListAdapter = new MovieExpandableListAdapter(this,
+            final MovieExpandableListAdapter reviewListAdapter = new MovieExpandableListAdapter(this,
                     ExpandableListType.EXPANDABLE_REVIEW_LIST,
                     headingsList,
                     childMap);
 
             mExpListReviewView.setAdapter(reviewListAdapter);
+            mExpListReviewView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+                @Override
+                public boolean onChildClick(ExpandableListView expandableListView, View view, int i, int i1, long l) {
+                    ReviewDetails clickedReview = (ReviewDetails) reviewListAdapter.getChild(i, i1);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(clickedReview.getReviewUrl()));
+                    startActivity(intent);
+                    return true;
+                }
+            });
+
         }
 
         displayUiElements();
