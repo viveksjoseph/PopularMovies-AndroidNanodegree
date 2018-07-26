@@ -21,7 +21,7 @@ import android.widget.TextView;
 
 import com.example.android.popularmovies.Adapters.MovieDetailsAdapter;
 import com.example.android.popularmovies.Data.MovieData;
-import com.example.android.popularmovies.Data.MovieResponse;
+import com.example.android.popularmovies.Data.Movies.MovieResponse;
 import com.example.android.popularmovies.Utils.JsonUtils;
 import com.example.android.popularmovies.Utils.NetworkUtils;
 import com.google.gson.JsonParseException;
@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.loading_failed_tv)
     TextView mLoadingFailedTv;
 
-    private int mMenuSpinnerLocation = 0;
     MovieDetailsAdapter mMovieAdapter = null;
 
     @Override
@@ -96,18 +95,20 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        Bundle loaderQueryBundle = new Bundle();
-        loaderQueryBundle.putString(MOVIE_POPULAR_QUERY_URL_EXTRA, movieQueryUrlPopular);
-        loaderQueryBundle.putString(MOVIE_HIGH_RATED_QUERY_URL_EXTRA, movieQueryUrlHighRated);
-
-
 
         if (MovieData.getInstance().getMovieDetailsArray(MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR) == null ||
                 MovieData.getInstance().getMovieDetailsArray(MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED) == null) {
+
+            Bundle loaderQueryBundle = new Bundle();
+            loaderQueryBundle.putString(MOVIE_POPULAR_QUERY_URL_EXTRA, movieQueryUrlPopular);
+            loaderQueryBundle.putString(MOVIE_HIGH_RATED_QUERY_URL_EXTRA, movieQueryUrlHighRated);
+
             getSupportLoaderManager().initLoader(MOVIE_QUERY_LOADER_POPULAR,
                     loaderQueryBundle, MainActivity.this);
+
             getSupportLoaderManager().initLoader(MOVIE_QUERY_LOADER_HIGHRATED,
                     loaderQueryBundle, MainActivity.this);
+
         } else {
             SetMovieResults();
         }
@@ -210,9 +211,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public String loadInBackground() {
                 String searchQueryString = null;
-                if (id == MOVIE_QUERY_LOADER_POPULAR){
+                if (id == MOVIE_QUERY_LOADER_POPULAR) {
                     searchQueryString = args.getString(MOVIE_POPULAR_QUERY_URL_EXTRA);
-                }else if (id == MOVIE_QUERY_LOADER_HIGHRATED){
+                } else if (id == MOVIE_QUERY_LOADER_HIGHRATED) {
                     searchQueryString = args.getString(MOVIE_HIGH_RATED_QUERY_URL_EXTRA);
                 }
 
@@ -280,7 +281,7 @@ public class MainActivity extends AppCompatActivity
         MovieData.GridArrangement currentArrangement = MovieData.getInstance().getCurrentGridArrangement();
         MovieResponse response = MovieData.getInstance().getMovieDetailsArray(currentArrangement);
 
-        if(response == null){
+        if (response == null) {
             // data not loaded yet. Return
             return;
         }
