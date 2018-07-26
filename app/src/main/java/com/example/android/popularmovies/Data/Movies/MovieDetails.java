@@ -1,5 +1,7 @@
-package com.example.android.popularmovies.Data;
+package com.example.android.popularmovies.Data.Movies;
 
+import com.example.android.popularmovies.Data.Reviews.ReviewResponse;
+import com.example.android.popularmovies.Data.Videos.VideoResponse;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.Date;
@@ -53,6 +55,9 @@ public class MovieDetails {
     @SerializedName(JSON_RELEASE_DATE)
     Date releaseDate;
 
+    VideoResponse videoResponse;
+    ReviewResponse reviewResponse;
+
     public MovieDetails() {
         voteCount = 0;
         id = 0;
@@ -68,6 +73,9 @@ public class MovieDetails {
         isAdultMovie = false;
         overview = "";
         releaseDate = null;
+
+        videoResponse = null;
+        reviewResponse = null;
     }
 
     public int getVoteCount() {
@@ -124,5 +132,21 @@ public class MovieDetails {
 
     public Date getReleaseDate() {
         return releaseDate;
+    }
+
+    public VideoResponse getVideoResponse() {
+        return videoResponse;
+    }
+
+    public void setVideoResponse(VideoResponse videoResponse) {
+        this.videoResponse = videoResponse;
+    }
+
+    public ReviewResponse getReviewResponse() {
+        return reviewResponse;
+    }
+
+    public void setReviewResponse(ReviewResponse reviewResponse) {
+        this.reviewResponse = reviewResponse;
     }
 }

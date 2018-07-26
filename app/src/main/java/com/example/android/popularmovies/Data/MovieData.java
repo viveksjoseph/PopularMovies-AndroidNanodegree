@@ -1,5 +1,7 @@
 package com.example.android.popularmovies.Data;
 
+import com.example.android.popularmovies.Data.Movies.MovieResponse;
+
 import java.util.ArrayList;
 import java.util.List;
 
