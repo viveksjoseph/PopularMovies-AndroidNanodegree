@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -18,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.popularmovies.Adapters.MovieExpandableListAdapter;
 import com.example.android.popularmovies.Adapters.MovieExpandableListAdapter.ExpandableListType;
@@ -28,6 +30,8 @@ import com.example.android.popularmovies.Data.Reviews.ReviewDetails;
 import com.example.android.popularmovies.Data.Reviews.ReviewResponse;
 import com.example.android.popularmovies.Data.Videos.VideoDetails;
 import com.example.android.popularmovies.Data.Videos.VideoResponse;
+import com.example.android.popularmovies.Database.AppDatabase;
+import com.example.android.popularmovies.ThreadHandling.AppExecutors;
 import com.example.android.popularmovies.Utils.JsonUtils;
 import com.example.android.popularmovies.Utils.NetworkUtils;
 import com.google.gson.JsonParseException;
@@ -73,8 +77,12 @@ public class MovieDetailActivity extends AppCompatActivity implements LoaderCall
     NonScrollableExpandableListView mExpListReviewView;
     @BindView(R.id.detail_progress_bar)
     ProgressBar mLoadingBar;
+    @BindView(R.id.fab_favorites)
+    FloatingActionButton mFloatActionBtn;
 
     private int mCurrentPosition = MOVIE_NOT_FOUND_POSITION;
+
+    private AppDatabase mAppDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +97,8 @@ public class MovieDetailActivity extends AppCompatActivity implements LoaderCall
             Log.d("MovieDetailActivity", "Intent not available");
             return;
         }
+
+        mAppDb = AppDatabase.getInstance(getApplicationContext());
 
         mCurrentPosition = intent.getIntExtra(MOVIE_EXTRA_POSITION, MOVIE_NOT_FOUND_POSITION);
 
@@ -109,7 +119,7 @@ public class MovieDetailActivity extends AppCompatActivity implements LoaderCall
         }
 
         Picasso.with(this)
-                .load(movieDetail.getBackdropPath())
+                .load(movieDetail.getAppendedBackdropPath())
                 .into(mMovieBannerImage);
         setTitle(movieDetail.getMovieTitle());
 
@@ -125,6 +135,50 @@ public class MovieDetailActivity extends AppCompatActivity implements LoaderCall
         mMovieReleaseDate.setText(dateFormat.format(movieDetail.getReleaseDate()));
 
         mMovieSynopsis.setText(movieDetail.getOverview());
+
+        mFloatActionBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                final MovieDetails currentMovie = MovieData.getInstance()
+                        .getMovieDetailsArray(MovieData.getInstance().getCurrentGridArrangement())
+                        .getResultsArray()
+                        .get(mCurrentPosition);
+
+                AppExecutors.getInstance().getDiskIO().execute(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        MovieDetails databaseMovie = mAppDb.movieDetailsDAO()
+                                .getMovieForId(currentMovie.getMovieId());
+
+                        if (databaseMovie == null) {
+                            mAppDb.movieDetailsDAO().insertMovie(currentMovie);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(),
+                                            R.string.add_favorite,
+                                            Toast.LENGTH_SHORT)
+                                            .show();
+                                }
+                            });
+                        } else {
+                            mAppDb.movieDetailsDAO().deleteMovie(currentMovie);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(),
+                                            R.string.remove_favorite,
+                                            Toast.LENGTH_SHORT)
+                                            .show();
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
 
         Bundle loaderQueryBundle = new Bundle();
 
@@ -168,6 +222,9 @@ public class MovieDetailActivity extends AppCompatActivity implements LoaderCall
 
     private void showLoadingFailed() {
 
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         if (mLoadingBar != null) {
             mLoadingBar.setVisibility(View.INVISIBLE);
         }
@@ -200,7 +257,6 @@ public class MovieDetailActivity extends AppCompatActivity implements LoaderCall
     }
 
     private void setVideoReviewResults() {
-        //TODO: Complete set values
 
         MovieData.GridArrangement currentArrangement = MovieData.getInstance().getCurrentGridArrangement();
         ReviewResponse reviewResponse = MovieData.getInstance().getMovieDetailsArray(currentArrangement)
