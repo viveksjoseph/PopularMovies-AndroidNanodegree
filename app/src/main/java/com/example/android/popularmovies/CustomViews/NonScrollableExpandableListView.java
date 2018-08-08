@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
-// Fix for ExpandableListViews scrolling like crazy inside ScrollViews
+// Fix for ExpandableListViews scroll taking over the scrollView scroll.
 // From https://stackoverflow.com/a/37605908/9426223
 // Thank you V-rund Puro-hit
 

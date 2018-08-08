@@ -47,6 +47,22 @@ public class MovieData {
             public String getString() {
                 return "top_rated";
             }
+        },
+        ARRANGEMENT_FAVORITES {
+            @Override
+            public String getCaption() {
+                return "Favorite Movies";
+            }
+
+            @Override
+            public int getPosition() {
+                return 2;
+            }
+
+            @Override
+            public String getString() {
+                return "favorite";
+            }
         }
     }
 
