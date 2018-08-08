@@ -8,11 +8,15 @@
     <string name="synopsis_text">Synopsis:</string>
     <string name="menu_title">Sort</string>
     <string name="loading_failed_text">Could not retrieve results from the Server. Please try Later.</string>
+    <string name="no_result_found_text">No results were found</string>
     <string name="avg_vote_out_of">/10</string>
     <string name="exp_heading_trailers">Related Videos</string>
     <string name="exp_heading_reviews">Reviews</string>
+    <string name="add_favorite">Added this movie to your favorites</string>
+    <string name="remove_favorite">Removed this movie from your favorites</string>
     <string-array name="spinner_array">
         <item>Most Popular</item>
         <item>Top Rated</item>
+        <item>Favorites</item>
     </string-array>
 </resources>
