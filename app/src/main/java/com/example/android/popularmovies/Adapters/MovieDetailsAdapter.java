@@ -48,7 +48,7 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
     @Override
     public void onBindViewHolder(@NonNull MovieDetailsViewHolder holder, final int position) {
         Picasso.with(mContext)
-                .load(mMovieDetailList.get(position).getPosterPath())
+                .load(mMovieDetailList.get(position).getAppendedPosterPath())
                 .into(holder.mMoviePosterIv);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
