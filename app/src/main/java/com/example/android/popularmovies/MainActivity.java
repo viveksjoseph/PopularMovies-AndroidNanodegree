@@ -22,6 +22,8 @@ import android.widget.TextView;
 import com.example.android.popularmovies.Adapters.MovieDetailsAdapter;
 import com.example.android.popularmovies.Data.MovieData;
 import com.example.android.popularmovies.Data.Movies.MovieResponse;
+import com.example.android.popularmovies.Database.AppDatabase;
+import com.example.android.popularmovies.ThreadHandling.AppExecutors;
 import com.example.android.popularmovies.Utils.JsonUtils;
 import com.example.android.popularmovies.Utils.NetworkUtils;
 import com.google.gson.JsonParseException;
@@ -42,9 +44,6 @@ public class MainActivity extends AppCompatActivity
     private final static int MOVIE_QUERY_LOADER_HIGHRATED = 3445;
     private final static String MOVIE_POPULAR_QUERY_URL_EXTRA = "moviePopularUrlExtra";
     private final static String MOVIE_HIGH_RATED_QUERY_URL_EXTRA = "movieHighRatedUrlExtra";
-
-    private final static String SPINNER_STATE_SAVE_KEY = "spinnerStateSave";
-
 
     @BindView(R.id.loading_bar)
     ProgressBar mLoadingBar;
@@ -95,7 +94,6 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-
         if (MovieData.getInstance().getMovieDetailsArray(MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR) == null ||
                 MovieData.getInstance().getMovieDetailsArray(MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED) == null) {
 
@@ -129,6 +127,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showGridContent() {
+
         if (mLoadingBar != null) {
             mLoadingBar.setVisibility(View.INVISIBLE);
         }
@@ -143,6 +142,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showLoadingFailed() {
+        showLoadingFailed(R.string.loading_failed_text);
+    }
+
+    private void showLoadingFailed(int failTextId) {
+
         if (mLoadingBar != null) {
             mLoadingBar.setVisibility(View.INVISIBLE);
         }
@@ -152,8 +156,28 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (mLoadingFailedTv != null) {
+            mLoadingFailedTv.setText(getText(failTextId));
             mLoadingFailedTv.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void LoadFavoriteMovies() {
+        AppExecutors.getInstance().getDiskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                AppDatabase appDb = AppDatabase.getInstance(getApplicationContext());
+                final MovieResponse movieResponse = new MovieResponse(appDb.movieDetailsDAO().loadAllMovies());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        MovieData.getInstance().setMovieDetailsArray(
+                                MovieData.GridArrangement.ARRANGEMENT_FAVORITES,
+                                movieResponse);
+                        SetMovieResults();
+                    }
+                });
+            }
+        });
     }
 
     @Override
@@ -176,13 +200,25 @@ public class MainActivity extends AppCompatActivity
 
                     MovieData.getInstance().setCurrentGridArrangement(MovieData.GridArrangement.ARRANGEMENT_MOST_POPULAR);
 
+                    //Refresh Grid View with new Data
+                    makeMovieQuery();
+
                 } else if (position == MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED.getPosition()) {
 
                     MovieData.getInstance().setCurrentGridArrangement(MovieData.GridArrangement.ARRANGEMENT_HIGHEST_RATED);
+
+                    //Refresh Grid View with new Data
+                    makeMovieQuery();
+
+                } else if (position == MovieData.GridArrangement.ARRANGEMENT_FAVORITES.getPosition()) {
+
+                    MovieData.getInstance().setCurrentGridArrangement(MovieData.GridArrangement.ARRANGEMENT_FAVORITES);
+
+                    //Refresh Grid View with new Data
+                    LoadFavoriteMovies();
                 }
 
-                //Refresh Grid View with new Data
-                makeMovieQuery();
+
             }
 
             @Override
@@ -288,8 +324,23 @@ public class MainActivity extends AppCompatActivity
 
         setTitle(MovieData.getInstance().getCurrentGridArrangement().getCaption());
 
+        if (response.getResultsArray().isEmpty() || response.getResultsArray() == null) {
+            showLoadingFailed(R.string.no_result_found_text);
+            return;
+        }
+
         mMovieAdapter.setMovieData(response.getResultsArray());
-        mMovieAdapter.notifyDataSetChanged();
         showGridContent();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (MovieData.getInstance().getCurrentGridArrangement()
+                == MovieData.GridArrangement.ARRANGEMENT_FAVORITES) {
+//            Reloading the activity content in case favorites have been removed
+            LoadFavoriteMovies();
+        }
     }
 }
