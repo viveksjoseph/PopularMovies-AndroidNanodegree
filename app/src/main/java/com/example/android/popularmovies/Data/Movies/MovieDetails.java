@@ -1,5 +1,9 @@
 package com.example.android.popularmovies.Data.Movies;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
+
 import com.example.android.popularmovies.Data.Reviews.ReviewResponse;
 import com.example.android.popularmovies.Data.Videos.VideoResponse;
 import com.google.gson.annotations.SerializedName;
@@ -7,6 +11,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 import java.util.List;
 
+@Entity(tableName = "Movies")
 public class MovieDetails {
 
     private static final String JSON_VOTE_COUNT = "vote_count";
@@ -27,43 +32,58 @@ public class MovieDetails {
     private static final String IMAGE_INITIAL_PATH = "http://image.tmdb.org/t/p/original/";
 
     @SerializedName(JSON_VOTE_COUNT)
-    int voteCount;
+    private int voteCount;
+
+    @PrimaryKey(autoGenerate = false)
     @SerializedName(JSON_ID)
-    long id;
+    private long movieId;
+
     @SerializedName(JSON_VIDEO)
-    boolean isVideoAvailable;
+    private boolean isVideoAvailable;
+
     @SerializedName(JSON_VOTE_AVERAGE)
-    double voteAverage;
+    private double voteAverage;
+
     @SerializedName(JSON_TITLE)
-    String title;
+    private String movieTitle;
+
     @SerializedName(JSON_POPULARITY)
-    double popularity;
+    private double popularity;
+
     @SerializedName(JSON_POSTER_PATH)
-    String posterPath;
+    private String posterPath;
+
     @SerializedName(JSON_ORG_LANGUAGE)
-    String originalLanguage;
+    private String originalLanguage;
+
     @SerializedName(JSON_ORG_TITLE)
-    String originalTitle;
+    private String originalTitle;
+
     @SerializedName(JSON_GENRE_IDS)
-    List<Integer> genreIds;
+    private List<Integer> genreIds;
+
     @SerializedName(JSON_BACKDROP_PATH)
-    String backdropPath;
+    private String backdropPath;
+
     @SerializedName(JSON_ADULT)
-    boolean isAdultMovie;
+    private boolean isAdultMovie;
+
     @SerializedName(JSON_OVERVIEW)
-    String overview;
+    private String overview;
+
     @SerializedName(JSON_RELEASE_DATE)
-    Date releaseDate;
+    private Date releaseDate;
 
-    VideoResponse videoResponse;
-    ReviewResponse reviewResponse;
+    private VideoResponse videoResponse;
+    private ReviewResponse reviewResponse;
 
+    @Ignore
     public MovieDetails() {
         voteCount = 0;
-        id = 0;
+        movieId = 0;
         isVideoAvailable = false;
         voteAverage = 0;
-        title = "";
+        movieTitle = "";
         popularity = 0;
         posterPath = "";
         originalLanguage = "";
@@ -78,32 +98,91 @@ public class MovieDetails {
         reviewResponse = null;
     }
 
+    public MovieDetails(int voteCount, long movieId,
+                        boolean isVideoAvailable, boolean isAdultMovie,
+                        double voteAverage, String movieTitle,
+                        double popularity, String posterPath,
+                        String originalLanguage, String originalTitle,
+                        List<Integer> genreIds, String backdropPath,
+                        String overview, Date releaseDate,
+                        VideoResponse videoResponse, ReviewResponse reviewResponse) {
+        this.voteCount = voteCount;
+        this.movieId = movieId;
+        this.isVideoAvailable = isVideoAvailable;
+        this.voteAverage = voteAverage;
+        this.movieTitle = movieTitle;
+        this.popularity = popularity;
+        this.posterPath = posterPath;
+        this.originalLanguage = originalLanguage;
+        this.originalTitle = originalTitle;
+        this.genreIds = genreIds;
+        this.backdropPath = backdropPath;
+        this.isAdultMovie = isAdultMovie;
+        this.overview = overview;
+        this.releaseDate = releaseDate;
+        this.videoResponse = videoResponse;
+        this.reviewResponse = reviewResponse;
+    }
+
     public int getVoteCount() {
         return voteCount;
     }
 
-    public long getMovieId() {
-        return id;
+    public void setVoteCount(int voteCount) {
+        this.voteCount = voteCount;
     }
+
+    public long getMovieId() {
+        return movieId;
+    }
+
+    public void setMovieId(long movieId) {
+        this.movieId = movieId;
+    }
+
 
     public boolean isVideoAvailable() {
         return isVideoAvailable;
+    }
+
+    public void setVideoAvailable(boolean videoAvailable) {
+        isVideoAvailable = videoAvailable;
     }
 
     public double getVoteAverage() {
         return voteAverage;
     }
 
+    public void setVoteAverage(double voteAverage) {
+        this.voteAverage = voteAverage;
+    }
+
     public String getMovieTitle() {
-        return title;
+        return movieTitle;
+    }
+
+    public void setMovieTitle(String movieTitle) {
+        this.movieTitle = movieTitle;
     }
 
     public double getPopularity() {
         return popularity;
     }
 
+    public void setPopularity(double popularity) {
+        this.popularity = popularity;
+    }
+
     public String getPosterPath() {
+        return posterPath;
+    }
+
+    public String getAppendedPosterPath(){
         return IMAGE_INITIAL_PATH + posterPath;
+    }
+
+    public void setPosterPath(String posterPath) {
+        this.posterPath = posterPath;
     }
 
     public String getOriginalLanguage() {
@@ -114,24 +193,60 @@ public class MovieDetails {
         return originalTitle;
     }
 
+
+    public void setOriginalLanguage(String originalLanguage) {
+        this.originalLanguage = originalLanguage;
+    }
+
+    public void setOriginalTitle(String originalTitle) {
+        this.originalTitle = originalTitle;
+    }
+
     public List<Integer> getGenreIds() {
         return genreIds;
     }
 
+
+    public void setGenreIds(List<Integer> genreIds) {
+        this.genreIds = genreIds;
+    }
+
     public String getBackdropPath() {
+        return backdropPath;
+    }
+
+    public String getAppendedBackdropPath() {
         return IMAGE_INITIAL_PATH + backdropPath;
+    }
+
+    public void setBackdropPath(String backdropPath) {
+        this.backdropPath = backdropPath;
     }
 
     public boolean isAdultMovie() {
         return isAdultMovie;
     }
 
+
+    public void setAdultMovie(boolean adultMovie) {
+        isAdultMovie = adultMovie;
+    }
+
     public String getOverview() {
         return overview;
     }
 
+    public void setOverview(String overview) {
+        this.overview = overview;
+    }
+
     public Date getReleaseDate() {
         return releaseDate;
+    }
+
+
+    public void setReleaseDate(Date releaseDate) {
+        this.releaseDate = releaseDate;
     }
 
     public VideoResponse getVideoResponse() {

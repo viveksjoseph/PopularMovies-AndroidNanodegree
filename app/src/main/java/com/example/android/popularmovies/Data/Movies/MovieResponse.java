@@ -20,6 +20,13 @@ public class MovieResponse {
     @SerializedName(JSON_RESULTS)
     List<MovieDetails> resultsArray;
 
+    public MovieResponse(List<MovieDetails> movieDetailsList){
+        this.pageNumber = 0;
+        this.totalResults = 0;
+        this.totalPages = 0;
+        this.resultsArray = movieDetailsList;
+    }
+
     public List<MovieDetails> getResultsArray() {
         return resultsArray;
     }
