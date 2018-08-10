@@ -2,6 +2,7 @@ package com.example.android.popularmovies;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -41,7 +42,8 @@ import butterknife.ButterKnife;
 public class MainActivity extends AppCompatActivity
         implements LoaderCallbacks<String> {
 
-    private final static int NUM_COL_FOR_GRID = 3;
+    private final static int NUM_COL_FOR_GRID_PORTRAIT = 3;
+    private final static int NUM_COL_FOR_GRID_LANDSCAPE = 4;
 
     private final static int MOVIE_QUERY_LOADER_POPULAR = 2334;
     private final static int MOVIE_QUERY_LOADER_HIGHRATED = 3445;
@@ -77,7 +79,8 @@ public class MainActivity extends AppCompatActivity
         }
 
         mMovieAdapter = new MovieDetailsAdapter(getApplicationContext());
-        GridLayoutManager layoutManager = new GridLayoutManager(this, NUM_COL_FOR_GRID);
+        int spanCount = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? NUM_COL_FOR_GRID_LANDSCAPE : NUM_COL_FOR_GRID_PORTRAIT;
+        GridLayoutManager layoutManager = new GridLayoutManager(this, spanCount);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setAdapter(mMovieAdapter);
