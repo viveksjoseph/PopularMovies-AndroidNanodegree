@@ -19,11 +19,6 @@ import java.util.List;
 public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapter.MovieDetailsViewHolder> {
 
     private List<MovieDetails> mMovieDetailList;
-    private Context mContext;
-
-    public MovieDetailsAdapter(Context context) {
-        mContext = context;
-    }
 
     public class MovieDetailsViewHolder extends RecyclerView.ViewHolder {
 
@@ -46,16 +41,16 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MovieDetailsViewHolder holder, final int position) {
-        Picasso.with(mContext)
+    public void onBindViewHolder(@NonNull final MovieDetailsViewHolder holder, final int position) {
+        Picasso.with(holder.itemView.getContext())
                 .load(mMovieDetailList.get(position).getAppendedPosterPath())
                 .into(holder.mMoviePosterIv);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(mContext, MovieDetailActivity.class);
+                Intent intent = new Intent(holder.itemView.getContext(), MovieDetailActivity.class);
                 intent.putExtra(MovieDetailActivity.MOVIE_EXTRA_POSITION, position);
-                mContext.startActivity(intent);
+                holder.itemView.getContext().startActivity(intent);
             }
         });
     }

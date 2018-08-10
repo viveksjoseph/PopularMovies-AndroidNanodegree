@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        mMovieAdapter = new MovieDetailsAdapter(getApplicationContext());
+        mMovieAdapter = new MovieDetailsAdapter();
         int spanCount = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? NUM_COL_FOR_GRID_LANDSCAPE : NUM_COL_FOR_GRID_PORTRAIT;
         GridLayoutManager layoutManager = new GridLayoutManager(this, spanCount);
         mRecyclerView.setLayoutManager(layoutManager);
