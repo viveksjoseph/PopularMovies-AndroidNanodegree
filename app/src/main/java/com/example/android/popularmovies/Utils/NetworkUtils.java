@@ -16,8 +16,7 @@ import okhttp3.Response;
 
 public class NetworkUtils {
 
-    private static final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3";
-    private static final String MOVIEDB_MOVIE_PATH = "movie";
+    private static final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
     private static final String MOVIEDB_VIDEO_PATH = "videos";
     private static final String MOVIEDB_REVIEW_PATH = "reviews";
     private static final String MOVIEDB_APIKEY_QUERY = "api_key";
@@ -45,7 +44,6 @@ public class NetworkUtils {
 
     public static String BuildQueryURL(Context context, String sortPreference) {
         Uri queryUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
-                .appendPath(MOVIEDB_MOVIE_PATH)
                 .appendPath(sortPreference)
                 .appendQueryParameter(MOVIEDB_APIKEY_QUERY, context.getString(R.string.moviedb_api))
                 .build();
@@ -55,7 +53,6 @@ public class NetworkUtils {
 
     public static String BuildVideoURL(Context context, long movieId){
         Uri queryUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
-                .appendPath(MOVIEDB_MOVIE_PATH)
                 .appendPath(String.valueOf(movieId))
                 .appendPath(MOVIEDB_VIDEO_PATH)
                 .appendQueryParameter(MOVIEDB_APIKEY_QUERY, context.getString(R.string.moviedb_api))
@@ -66,7 +63,6 @@ public class NetworkUtils {
 
     public static String BuildReviewURL(Context context, long movieId){
         Uri queryUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
-                .appendPath(MOVIEDB_MOVIE_PATH)
                 .appendPath(String.valueOf(movieId))
                 .appendPath(MOVIEDB_REVIEW_PATH)
                 .appendQueryParameter(MOVIEDB_APIKEY_QUERY, context.getString(R.string.moviedb_api))
