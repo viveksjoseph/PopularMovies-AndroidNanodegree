@@ -1,5 +1,7 @@
 package com.example.android.popularmovies;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -21,16 +23,17 @@ import android.widget.TextView;
 
 import com.example.android.popularmovies.Adapters.MovieDetailsAdapter;
 import com.example.android.popularmovies.Data.MovieData;
+import com.example.android.popularmovies.Data.Movies.MovieDetails;
 import com.example.android.popularmovies.Data.Movies.MovieResponse;
-import com.example.android.popularmovies.Database.AppDatabase;
-import com.example.android.popularmovies.ThreadHandling.AppExecutors;
 import com.example.android.popularmovies.Utils.JsonUtils;
 import com.example.android.popularmovies.Utils.NetworkUtils;
+import com.example.android.popularmovies.ViewModels.AllMoviesViewModel;
 import com.google.gson.JsonParseException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -69,7 +72,7 @@ public class MainActivity extends AppCompatActivity
     private void LoadRecyclerView() {
         if (mRecyclerView == null) {
             Log.d("Main Activity", "Recycler View not initialized");
-            showLoadingFailed();
+            showLoadingFailed(R.string.app_error_text);
             return;
         }
 
@@ -90,7 +93,7 @@ public class MainActivity extends AppCompatActivity
 
         if (movieQueryUrlPopular == null || movieQueryUrlPopular.isEmpty() ||
                 movieQueryUrlHighRated == null || movieQueryUrlHighRated.isEmpty()) {
-            showLoadingFailed();
+            showLoadingFromServerFailed();
             return;
         }
 
@@ -141,7 +144,13 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void showLoadingFailed() {
+    private void showLoadingFromServerFailed() {
+        if (MovieData.getInstance().getCurrentGridArrangement()
+                == MovieData.GridArrangement.ARRANGEMENT_FAVORITES) {
+            // favorites is loaded from cache. No server involved
+            return;
+        }
+
         showLoadingFailed(R.string.loading_failed_text);
     }
 
@@ -162,20 +171,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void LoadFavoriteMovies() {
-        AppExecutors.getInstance().getDiskIO().execute(new Runnable() {
+
+        AllMoviesViewModel viewModel = ViewModelProviders.of(this).get(AllMoviesViewModel.class);
+        viewModel.getMovieDetailsLiveData().observe(this, new Observer<List<MovieDetails>>() {
             @Override
-            public void run() {
-                AppDatabase appDb = AppDatabase.getInstance(getApplicationContext());
-                final MovieResponse movieResponse = new MovieResponse(appDb.movieDetailsDAO().loadAllMovies());
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        MovieData.getInstance().setMovieDetailsArray(
-                                MovieData.GridArrangement.ARRANGEMENT_FAVORITES,
-                                movieResponse);
-                        SetMovieResults();
-                    }
-                });
+            public void onChanged(@Nullable List<MovieDetails> movieDetailsList) {
+                MovieResponse movieResponse = new MovieResponse(movieDetailsList);
+                MovieData.getInstance().setMovieDetailsArray(
+                        MovieData.GridArrangement.ARRANGEMENT_FAVORITES,
+                        movieResponse);
+                SetMovieResults();
             }
         });
     }
@@ -217,8 +222,6 @@ public class MainActivity extends AppCompatActivity
                     //Refresh Grid View with new Data
                     LoadFavoriteMovies();
                 }
-
-
             }
 
             @Override
@@ -278,7 +281,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(@NonNull Loader<String> loader, String data) {
         if (data == null || data.isEmpty()) {
-            showLoadingFailed();
+            showLoadingFromServerFailed();
             return;
         }
 
@@ -287,7 +290,7 @@ public class MainActivity extends AppCompatActivity
             movieResponse = JsonUtils.parseMovieResponseJson(data);
         } catch (JsonParseException e) {
             Log.d("Main Activity", "response JSON could not be de-serialized: " + e.getMessage());
-            showLoadingFailed();
+            showLoadingFromServerFailed();
             return;
         }
 
@@ -331,16 +334,5 @@ public class MainActivity extends AppCompatActivity
 
         mMovieAdapter.setMovieData(response.getResultsArray());
         showGridContent();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (MovieData.getInstance().getCurrentGridArrangement()
-                == MovieData.GridArrangement.ARRANGEMENT_FAVORITES) {
-//            Reloading the activity content in case favorites have been removed
-            LoadFavoriteMovies();
-        }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.android.popularmovies.Database;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
@@ -15,10 +16,10 @@ import java.util.List;
 public interface MovieDetailsDAO {
 
     @Query("SELECT * FROM Movies")
-    List<MovieDetails> loadAllMovies();
+    LiveData<List<MovieDetails>> loadAllMovies();
 
     @Query("SELECT * FROM Movies WHERE movieId = :movieId")
-    MovieDetails getMovieForId(long movieId);
+    LiveData<MovieDetails> getMovieForId(long movieId);
 
     @Insert
     void insertMovie(MovieDetails movieDetails);

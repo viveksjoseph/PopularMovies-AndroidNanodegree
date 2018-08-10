@@ -1,5 +1,7 @@
 package com.example.android.popularmovies;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,6 +36,8 @@ import com.example.android.popularmovies.Database.AppDatabase;
 import com.example.android.popularmovies.ThreadHandling.AppExecutors;
 import com.example.android.popularmovies.Utils.JsonUtils;
 import com.example.android.popularmovies.Utils.NetworkUtils;
+import com.example.android.popularmovies.ViewModels.MovieForIdViewModel;
+import com.example.android.popularmovies.ViewModels.ViewModelFactory.MovieForIdViewModelFactory;
 import com.google.gson.JsonParseException;
 import com.squareup.picasso.Picasso;
 
@@ -109,7 +113,7 @@ public class MovieDetailActivity extends AppCompatActivity implements LoaderCall
         }
 
         MovieData.GridArrangement currentArrangement = MovieData.getInstance().getCurrentGridArrangement();
-        MovieDetails movieDetail = MovieData.getInstance().getMovieDetailsArray(currentArrangement)
+        final MovieDetails movieDetail = MovieData.getInstance().getMovieDetailsArray(currentArrangement)
                 .getResultsArray()
                 .get(mCurrentPosition);
         if (movieDetail == null) {
@@ -132,7 +136,12 @@ public class MovieDetailActivity extends AppCompatActivity implements LoaderCall
         mMovieRatingBar.setRating((float) movieDetail.getVoteAverage() / 2);
 
         DateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.US);
-        mMovieReleaseDate.setText(dateFormat.format(movieDetail.getReleaseDate()));
+        if (movieDetail.getReleaseDate() == null) {
+            mMovieReleaseDate.setText(R.string.unknown_date_str);
+        } else {
+            mMovieReleaseDate.setText(dateFormat.format(movieDetail.getReleaseDate()));
+        }
+
 
         mMovieSynopsis.setText(movieDetail.getOverview());
 
@@ -145,33 +154,53 @@ public class MovieDetailActivity extends AppCompatActivity implements LoaderCall
                         .getResultsArray()
                         .get(mCurrentPosition);
 
-                AppExecutors.getInstance().getDiskIO().execute(new Runnable() {
+                MovieForIdViewModelFactory factory = new MovieForIdViewModelFactory(mAppDb,
+                        currentMovie.getMovieId());
+                final MovieForIdViewModel viewModel = ViewModelProviders.of(MovieDetailActivity.this, factory)
+                        .get(MovieForIdViewModel.class);
+                viewModel.getMovie().observe(MovieDetailActivity.this, new Observer<MovieDetails>() {
                     @Override
-                    public void run() {
+                    public void onChanged(@Nullable MovieDetails movieDetails) {
 
-                        MovieDetails databaseMovie = mAppDb.movieDetailsDAO()
-                                .getMovieForId(currentMovie.getMovieId());
+                        viewModel.getMovie().removeObserver(this);
 
-                        if (databaseMovie == null) {
-                            mAppDb.movieDetailsDAO().insertMovie(currentMovie);
-                            runOnUiThread(new Runnable() {
+                        if (movieDetails == null) {
+
+                            AppExecutors.getInstance().getDiskIO().execute(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(getApplicationContext(),
-                                            R.string.add_favorite,
-                                            Toast.LENGTH_SHORT)
-                                            .show();
+
+                                    mAppDb.movieDetailsDAO().insertMovie(currentMovie);
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getApplicationContext(),
+                                                    R.string.add_favorite,
+                                                    Toast.LENGTH_SHORT)
+                                                    .show();
+                                        }
+                                    });
+
                                 }
                             });
+
                         } else {
-                            mAppDb.movieDetailsDAO().deleteMovie(currentMovie);
-                            runOnUiThread(new Runnable() {
+
+                            AppExecutors.getInstance().getDiskIO().execute(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(getApplicationContext(),
-                                            R.string.remove_favorite,
-                                            Toast.LENGTH_SHORT)
-                                            .show();
+
+                                    mAppDb.movieDetailsDAO().deleteMovie(currentMovie);
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getApplicationContext(),
+                                                    R.string.remove_favorite,
+                                                    Toast.LENGTH_SHORT)
+                                                    .show();
+                                        }
+                                    });
+
                                 }
                             });
                         }
